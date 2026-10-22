@@ -749,11 +749,11 @@
 
       <div class="form-card" id="contactCard">
         <form id="contactForm" class="form-body" novalidate>
-          <!-- Web3Forms Access-Key wird per JavaScript gesetzt (Konstante WEB3FORMS_KEY, siehe unten im <script>) -->
-          <input type="hidden" name="access_key" value="">
-          <input type="hidden" name="subject" value="Neue Anfrage über crisentis.de">
-          <input type="hidden" name="from_name" value="Crisentis Website">
-          <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <!-- Versand via FormSubmit an Volker.Patzwaldt@crisentis.de (fetch-URL im <script>) -->
+          <input type="hidden" name="_subject" value="Neue Anfrage über crisentis.de">
+          <input type="hidden" name="_template" value="table">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
 
           <div class="row2">
             <div class="field">
@@ -935,15 +935,14 @@
         Wirkung für die Zukunft widerrufen; eine formlose Mitteilung per E-Mail genügt. Die Daten
         werden gelöscht, sobald sie für die Erreichung des Zwecks nicht mehr erforderlich sind und
         keine gesetzlichen Aufbewahrungspflichten entgegenstehen.</p>
-     <p>Für den technischen Versand der Formularnachrichten setzen wir den Dienst <strong>Web3Forms</strong>
+     <p>Für den technischen Versand der Formularnachrichten setzen wir den Dienst <strong>FormSubmit</strong>
         als Auftragsverarbeiter (Art. 28 DSGVO) ein. Beim Absenden werden die im Formular eingegebenen
-        Daten an die Server von Web3Forms übermittelt, um Ihre Nachricht als E-Mail an uns zuzustellen.
-        Nach Angaben des Anbieters werden die Formularinhalte ausschließlich zur Zustellung verarbeitet
-        und nicht dauerhaft gespeichert. Zum Schutz vor Spam nutzen wir ein rein technisches
-        Prüffeld (Honeypot) – es kommt <strong>kein CAPTCHA und kein Dienst von Google</strong> zum
-        Einsatz. Weitere Informationen finden Sie in den Datenschutzhinweisen des Anbieters:
-        <a href="https://web3forms.com/privacy" target="_blank" rel="noopener">web3forms.com/privacy</a>.
-        <span class="placeholder">[Vor Freischaltung: Auftragsverarbeitungsvertrag mit Web3Forms abschließen.]</span></p>
+        Daten an die Server von FormSubmit übermittelt, um Ihre Nachricht als E-Mail an uns zuzustellen.
+        Zum Schutz vor Spam nutzen wir ein rein technisches Prüffeld (Honeypot) – es kommt
+        <strong>kein CAPTCHA und kein Dienst von Google</strong> zum Einsatz. Weitere Informationen finden
+        Sie in den Datenschutzhinweisen des Anbieters:
+        <a href="https://formsubmit.co/" target="_blank" rel="noopener">formsubmit.co</a>.
+        <span class="placeholder">[Vor Live-Gang: Auftragsverarbeitung mit FormSubmit prüfen.]</span></p>
 
      <h2>4. Cookies, Tracking und externe Dienste</h2>
      <p>Diese Website verwendet <strong>keine Cookies</strong> und <strong>keine Analyse- oder
@@ -1077,20 +1076,14 @@
     route();
   })();
 
-  // Contact form: validation + automatic e-mail delivery via Web3Forms
+  // Contact form: validation + automatic e-mail delivery via FormSubmit
   (function () {
     const form = document.getElementById('contactForm');
     if (!form) return;
 
-    // ===================================================================
-    //  HIER den kostenlosen Web3Forms Access-Key eintragen:
-    //  1) Auf https://web3forms.com deine E-Mail (Volker.Patzwaldt@crisentis.de)
-    //     eingeben  ->  Access-Key kommt per Mail.
-    //  2) Den Key unten zwischen die Anführungszeichen setzen. Fertig.
-    //  Danach sendet das Formular jede Anfrage automatisch an dein Postfach.
-    // ===================================================================
-    const WEB3FORMS_KEY = 'ERSETZEN-MIT-WEB3FORMS-ACCESS-KEY';
-    form.elements['access_key'].value = WEB3FORMS_KEY;
+    // Versand via FormSubmit an Volkers Postfach. Beim ERSTEN Absenden bekommt er
+    // einmalig eine Freischalt-Mail (1 Klick) – danach wird jede Anfrage zugestellt.
+    const FORMSUBMIT_URL = 'https://formsubmit.co/ajax/Volker.Patzwaldt@crisentis.de';
 
     const card = document.getElementById('contactCard');
     const errBox = document.getElementById('formError');
@@ -1125,20 +1118,17 @@
         return;
       }
 
-      // Kein Access-Key hinterlegt (z. B. Vorschau): Interaktion zeigen, ohne echten Versand.
-      if (WEB3FORMS_KEY.includes('ERSETZEN')) { card.classList.add('is-sent'); return; }
-
       const btn = form.querySelector('.btn-submit');
       const label = btn.innerHTML;
       btn.disabled = true; btn.textContent = 'Wird gesendet…';
       try {
-        const res = await fetch('https://api.web3forms.com/submit', {
+        const res = await fetch(FORMSUBMIT_URL, {
           method: 'POST',
           headers: { 'Accept': 'application/json' },
           body: new FormData(form)
         });
         const data = await res.json();
-        if (data.success) { card.classList.add('is-sent'); }
+        if (data.success === true || data.success === 'true') { card.classList.add('is-sent'); }
         else throw new Error(data.message || 'error');
       } catch (err) {
         errBox.style.display = 'block';
