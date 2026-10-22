@@ -1122,13 +1122,18 @@
       const label = btn.innerHTML;
       btn.disabled = true; btn.textContent = 'Wird gesendet…';
       try {
+        const payload = Object.fromEntries(new FormData(form).entries());
         const res = await fetch(FORMSUBMIT_URL, {
           method: 'POST',
-          headers: { 'Accept': 'application/json' },
-          body: new FormData(form)
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
         const data = await res.json();
         if (data.success === true || data.success === 'true') { card.classList.add('is-sent'); }
+        else if (/activat/i.test(data.message || '')) {
+          errBox.innerHTML = 'Das Formular wird gerade freigeschaltet. Bitte in Kürze erneut versuchen oder direkt an <a href="mailto:Volker.Patzwaldt@crisentis.de">Volker.Patzwaldt@crisentis.de</a> schreiben.';
+          errBox.style.display = 'block'; btn.disabled = false; btn.innerHTML = label;
+        }
         else throw new Error(data.message || 'error');
       } catch (err) {
         errBox.style.display = 'block';
